@@ -1,8 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>AI 도구 대시보드</title>
+  <meta charset="UTF-8" />
+  <title>AI 이미지 생성 대시보드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
@@ -11,238 +13,203 @@
       color: #ffffff;
       display: flex;
     }
-
     .sidebar {
       width: 240px;
       background-color: #1a1a1a;
       height: 100vh;
       padding: 20px;
-      box-sizing: border-box;
     }
     .sidebar h2 {
       font-size: 20px;
-      margin-bottom: 30px;
       color: #facc15;
-    }
-    .menu-group {
-      margin-top: 20px;
-    }
-    .menu-title {
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 6px;
     }
     .menu-item {
       padding: 10px;
-      color: #ddd;
-      cursor: pointer;
+      margin-top: 10px;
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      cursor: pointer;
+      background-color: #2a2a2a;
     }
     .menu-item:hover {
-      background-color: #333;
+      background-color: #444;
     }
-    .menu-item .label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .badge {
-      background: #facc15;
-      color: #000;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
     .main {
       flex: 1;
-      padding: 40px;
+      padding: 30px;
+      overflow-y: auto;
     }
-
-    .tabs button {
+    input, select, textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
       padding: 10px 16px;
-      margin-right: 6px;
-      background: #222;
-      color: #ccc;
+      background: #facc15;
+      color: #000;
       border: none;
       border-radius: 6px;
+      font-weight: bold;
       cursor: pointer;
     }
-    .tabs button.active {
+    .tab-buttons button {
+      margin-right: 10px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .tab-buttons button.active {
       background: #facc15;
       color: #000;
     }
-
-    .card-grid {
-      display: flex;
-      gap: 10px;
-      margin: 20px 0;
+    .history-img {
+      width: 150px;
+      margin: 10px;
+      border-radius: 6px;
+      display: block;
     }
-    .card {
-      background: #1f1f1f;
-      padding: 20px;
-      border: 1px solid #333;
-      border-radius: 8px;
-      text-align: center;
-      flex: 1;
+    .download-btn {
+      display: inline-block;
+      margin-top: 6px;
+      background: #444;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      text-decoration: none;
     }
-
-    .options {
-      margin-top: 20px;
+    .flash {
+      animation: flash 0.5s ease-in-out;
     }
-    .options label,
-    .options select,
-    .options input[type='checkbox'] {
-      margin-right: 10px;
+    @keyframes flash {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
-    .thumbnail-preview {
-      margin-top: 10px;
-      display: none;
+    .suggested button {
+      background: #333;
+      color: #fff;
+      border: none;
+      margin: 2px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <h2>🎬 우리만의 AI</h2>
-  <div class="menu-group">
-    <div class="menu-title">기본</div>
-    <div class="menu-item" onclick="navigate('home')"><span class="label">🏠 홈</span></div>
-    <div class="menu-item" onclick="navigate('library')"><span class="label">📁 내 작업물</span></div>
-  </div>
-  <div class="menu-group">
-    <div class="menu-title">도구</div>
-    <div class="menu-item" onclick="navigate('video')"><span class="label">🎥 비디오 생성</span></div>
-    <div class="menu-item" onclick="navigate('train')">
-      <span class="label">🚆 트레인 효과</span>
-      <span class="badge">NEW</span>
-    </div>
-    <div class="menu-item" onclick="navigate('image')"><span class="label">🖼️ 이미지 생성</span></div>
-    <div class="menu-item" onclick="navigate('lipsync')"><span class="label">👄 립싱크 도구</span></div>
-    <div class="menu-item" onclick="navigate('drama')"><span class="label">🎭 드라마 생성</span></div>
-    <div class="menu-item" onclick="navigate('tools')"><span class="label">🧰 전체 도구</span></div>
-  </div>
+  <h2>🎨 AI 대시보드</h2>
+  <div class="menu-item" onclick="showImageTool()">🖼 이미지 생성</div>
 </div>
 
 <div class="main" id="mainContent">
-  <h1>홈</h1>
-  <p>AI 도구를 시작하려면 왼쪽 메뉴를 선택하세요.</p>
+  <h1>환영합니다!</h1>
+  <p>왼쪽 메뉴에서 기능을 선택해 주세요.</p>
 </div>
 
 <script>
-  function navigate(section) {
-    const content = document.getElementById('mainContent');
-    if (section === 'video') {
-      content.innerHTML = `
-        <h1>비디오 생성</h1>
-        <div class="tabs" id="videoTabs">
-          <button class="active" onclick="setTab(this, 'image')">Image or Text</button>
-          <button onclick="setTab(this, 'effect')">Effect</button>
-          <button onclick="setTab(this, 'subject')">Subject Reference</button>
-          <button onclick="setTab(this, 'extend')">Extend</button>
-          <button onclick="setTab(this, 'lipsync')">LipSync</button>
-        </div>
-        <div id="tabContent">
-          <div class="card-grid">
-            <div class="card"><input type="file" required><br>📷 이미지 업로드 (필수)</div>
-            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
-            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
-            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
-          </div>
-        </div>
-        <div class="options">
-          <label>비율:
-            <select>
-              <option>16:9</option>
-              <option>9:16</option>
-            </select>
-          </label>
-          <label>길이:
-            <select>
-              <option>5초</option>
-              <option>10초</option>
-              <option>15초</option>
-              <option>30초</option>
-              <option>1분</option>
-              <option>5분</option>
-              <option>10분</option>
-            </select>
-          </label>
-          <label>해상도:
-            <select>
-              <option>720P</option>
-              <option>1080P (VIP)</option>
-              <option>2K (VIP)</option>
-              <option>4K (VIP)</option>
-            </select>
-          </label>
-          <label>수량:
-            <select>
-              <option>1</option>
-              <option>2 (VIP)</option>
-              <option>3 (VIP)</option>
-              <option>4 (VIP)</option>
-            </select>
-          </label>
-          <label><input type="checkbox" id="toggleThumbnail" checked> 썸네일 포함 여부</label>
-          <div class="thumbnail-preview" id="thumbnailPreview">썸네일 미리보기 표시 영역</div>
-          <button onclick="alert('비디오가 생성되었습니다 (샘플)!')">🎬 생성</button>
-        </div>
-      `;
-      document.getElementById('toggleThumbnail').addEventListener('change', function() {
-        document.getElementById('thumbnailPreview').style.display = this.checked ? 'block' : 'none';
-      });
-    } else {
-      const pages = {
-        home: '<h1>홈</h1><p>AI 도구를 시작하려면 왼쪽 메뉴를 선택하세요.</p>',
-        library: '<h1>내 작업물</h1><p>생성한 이미지 및 영상 목록입니다.</p>',
-        train: '<h1>트레인 효과</h1><p>새롭게 추가된 특수 효과 기능입니다.</p>',
-        image: '<h1>이미지 생성</h1><p>텍스트 프롬프트 기반 이미지 생성 도구입니다.</p>',
-        lipsync: '<h1>립싱크 도구</h1><p>텍스트를 음성과 립싱크로 표현해보세요.</p>',
-        drama: '<h1>드라마 생성</h1><p>대본을 입력해 드라마 영상으로 만들어보세요.</p>',
-        tools: '<h1>전체 도구</h1><p>모든 AI 도구를 확인할 수 있는 공간입니다.</p>'
-      };
-      content.innerHTML = pages[section] || '<h1>페이지 없음</h1>';
-    }
-  }
+function showImageTool() {
+  document.getElementById("mainContent").innerHTML = `
+    <h2>🖼 이미지 생성 도구</h2>
+    <div class="tab-buttons">
+      <button class="active" onclick="showPromptTab(this)">Prompt 입력</button>
+      <button onclick="showAIWriteTab(this)">AI Write</button>
+    </div>
+    <div id="tabArea"></div>
+    <div id="imageHistoryArea"></div>
+  `;
+  showPromptTab(document.querySelector('.tab-buttons button.active'));
+}
 
-  function setTab(button, tabName) {
-    const buttons = document.querySelectorAll('#videoTabs button');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
+function showPromptTab(btn) {
+  document.querySelectorAll(".tab-buttons button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tabArea").innerHTML = `
+    <textarea id="promptInput" placeholder="이미지를 설명하는 프롬프트 입력"></textarea>
+    <input id="negativeInput" placeholder="제외할 요소 입력 (예: blurry)">
+    <select id="styleSelect">
+      <option>Photorealistic</option>
+      <option>Anime</option>
+      <option>Watercolor</option>
+    </select>
+    <div class="suggested" id="suggestedPrompts"></div>
+    <button onclick="generateSampleImage()">이미지 생성</button>
+  `;
+  loadPromptSuggestions();
+  showImageHistory();
+}
 
-    const tabContent = document.getElementById('tabContent');
-    switch (tabName) {
-      case 'image':
-        tabContent.innerHTML = `
-          <div class="card-grid">
-            <div class="card"><input type="file" required><br>📷 이미지 업로드 (필수)</div>
-            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
-            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
-            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
-          </div>`;
-        break;
-      case 'effect':
-        tabContent.innerHTML = '<p>🎨 효과 설정 탭입니다. (추후 기능 추가 예정)</p>';
-        break;
-      case 'subject':
-        tabContent.innerHTML = '<p>📚 주제 참조 설정 탭입니다. (추후 기능 추가 예정)</p>';
-        break;
-      case 'extend':
-        tabContent.innerHTML = '<p>🔄 연장 옵션 탭입니다. (추후 기능 추가 예정)</p>';
-        break;
-      case 'lipsync':
-        tabContent.innerHTML = '<p>👄 립싱크 설정 탭입니다. (추후 기능 추가 예정)</p>';
-        break;
-      default:
-        tabContent.innerHTML = '<p>선택된 탭이 없습니다.</p>';
-    }
+function showAIWriteTab(btn) {
+  document.querySelectorAll(".tab-buttons button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tabArea").innerHTML = `
+    <input id="keywords" placeholder="예: 고양이, 겨울, 귀여운">
+    <select id="styleAI">
+      <option>Photorealistic</option>
+      <option>Anime</option>
+      <option>Watercolor</option>
+    </select>
+    <button onclick="autoGeneratePrompt()">자동 프롬프트 생성</button>
+    <textarea id="promptInput" placeholder="자동 생성된 프롬프트가 여기에 표시됩니다."></textarea>
+    <button onclick="generateSampleImage()">이미지 생성</button>
+  `;
+  showImageHistory();
+}
+
+function autoGeneratePrompt() {
+  const keywords = document.getElementById("keywords").value;
+  const style = document.getElementById("styleAI").value;
+  const prompt = `A ${keywords} in ${style} style, 8k, high detail`;
+  document.getElementById("promptInput").value = prompt;
+  savePrompt(prompt);
+  loadPromptSuggestions();
+}
+
+function generateSampleImage() {
+  const prompt = document.getElementById("promptInput").value;
+  const url = "https://via.placeholder.com/300x200.png?text=" + encodeURIComponent(prompt);
+  const history = JSON.parse(localStorage.getItem("imageHistory") || "[]");
+  history.unshift(url);
+  localStorage.setItem("imageHistory", JSON.stringify(history.slice(0, 5)));
+  savePrompt(prompt);
+  loadPromptSuggestions();
+  showImageHistory(true);
+}
+
+function savePrompt(prompt) {
+  const logs = JSON.parse(localStorage.getItem("promptLogs") || "[]");
+  if (!logs.includes(prompt)) {
+    logs.unshift(prompt);
+    localStorage.setItem("promptLogs", JSON.stringify(logs.slice(0, 5)));
   }
+}
+
+function loadPromptSuggestions() {
+  const history = JSON.parse(localStorage.getItem("promptLogs") || "[]");
+  const area = document.getElementById("suggestedPrompts");
+  if (area) {
+    area.innerHTML = history.map(p => `<button onclick="usePrompt('${p}')">${p}</button>`).join('');
+  }
+}
+
+function usePrompt(p) {
+  document.getElementById("promptInput").value = p;
+}
+
+function showImageHistory(flash = false) {
+  const area = document.getElementById("imageHistoryArea");
+  const history = JSON.parse(localStorage.getItem("imageHistory") || "[]");
+  area.innerHTML = "<h3>🖼 최근 생성된 이미지</h3>" + history.map(url => `
+    <div class="${flash ? 'flash' : ''}">
+      <img src="${url}" class="history-img" />
+      <a class="download-btn" href="${url}" download="image.png">이미지 저장</a>
+    </div>
+  `).join('');
+}
 </script>
 
 </body>
 </html>
-
