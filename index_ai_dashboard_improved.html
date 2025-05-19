@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI 이미지 생성 대시보드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+    }
+    .sidebar {
+      width: 240px;
+      background-color: #1a1a1a;
+      height: 100vh;
+      padding: 20px;
+    }
+    .sidebar h2 {
+      font-size: 20px;
+      color: #facc15;
+    }
+    .menu-item {
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #2a2a2a;
+    }
+    .menu-item:hover {
+      background-color: #444;
+    }
+    .main {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+    input, select, textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      padding: 10px 16px;
+      background: #facc15;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tab-buttons button {
+      margin-right: 10px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .tab-buttons button.active {
+      background: #facc15;
+      color: #000;
+    }
+    .history-img {
+      width: 150px;
+      margin: 10px;
+      border-radius: 6px;
+      display: block;
+    }
+    .download-btn {
+      display: inline-block;
+      margin-top: 6px;
+      background: #444;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+    .flash {
+      animation: flash 0.5s ease-in-out;
+    }
+    @keyframes flash {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .suggested button {
+      background: #333;
+      color: #fff;
+      border: none;
+      margin: 2px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>🎨 AI 대시보드</h2>
+  <div class="menu-item" onclick="showImageTool()">🖼 이미지 생성</div>
+</div>
+
+<div class="main" id="mainContent">
+  <h1>환영합니다!</h1>
+  <p>왼쪽 메뉴에서 기능을 선택해 주세요.</p>
+</div>
+
+<script>
+function showImageTool() {
+  document.getElementById("mainContent").innerHTML = `
+    <h2>🖼 이미지 생성 도구</h2>
+    <div class="tab-buttons">
+      <button class="active" onclick="showPromptTab(this)">Prompt 입력</button>
+      <button onclick="showAIWriteTab(this)">AI Write</button>
+    </div>
+    <div id="tabArea"></div>
+    <div id="imageHistoryArea"></div>
+  `;
+  showPromptTab(document.querySelector('.tab-buttons button.active'));
+}
+
+function showPromptTab(btn) {
+  document.querySelectorAll(".tab-buttons button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tabArea").innerHTML = `
+    <textarea id="promptInput" placeholder="이미지를 설명하는 프롬프트 입력"></textarea>
+    <input id="negativeInput" placeholder="제외할 요소 입력 (예: blurry)">
+    <select id="styleSelect">
+      <option>Photorealistic</option>
+      <option>Anime</option>
+      <option>Watercolor</option>
+    </select>
+    <div class="suggested" id="suggestedPrompts"></div>
+    <button onclick="generateSampleImage()">이미지 생성</button>
+  `;
+  loadPromptSuggestions();
+  showImageHistory();
+}
+
+function showAIWriteTab(btn) {
+  document.querySelectorAll(".tab-buttons button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tabArea").innerHTML = `
+    <input id="keywords" placeholder="예: 고양이, 겨울, 귀여운">
+    <select id="styleAI">
+      <option>Photorealistic</option>
+      <option>Anime</option>
+      <option>Watercolor</option>
+    </select>
+    <button onclick="autoGeneratePrompt()">자동 프롬프트 생성</button>
+    <textarea id="promptInput" placeholder="자동 생성된 프롬프트가 여기에 표시됩니다."></textarea>
+    <button onclick="generateSampleImage()">이미지 생성</button>
+  `;
+  showImageHistory();
+}
+
+function autoGeneratePrompt() {
+  const keywords = document.getElementById("keywords").value;
+  const style = document.getElementById("styleAI").value;
+  const prompt = `A ${keywords} in ${style} style, 8k, high detail`;
+  document.getElementById("promptInput").value = prompt;
+  savePrompt(prompt);
+  loadPromptSuggestions();
+}
+
+function generateSampleImage() {
+  const prompt = document.getElementById("promptInput").value;
+  const url = "https://via.placeholder.com/300x200.png?text=" + encodeURIComponent(prompt);
+  const history = JSON.parse(localStorage.getItem("imageHistory") || "[]");
+  history.unshift(url);
+  localStorage.setItem("imageHistory", JSON.stringify(history.slice(0, 5)));
+  savePrompt(prompt);
+  loadPromptSuggestions();
+  showImageHistory(true);
+}
+
+function savePrompt(prompt) {
+  const logs = JSON.parse(localStorage.getItem("promptLogs") || "[]");
+  if (!logs.includes(prompt)) {
+    logs.unshift(prompt);
+    localStorage.setItem("promptLogs", JSON.stringify(logs.slice(0, 5)));
+  }
+}
+
+function loadPromptSuggestions() {
+  const history = JSON.parse(localStorage.getItem("promptLogs") || "[]");
+  const area = document.getElementById("suggestedPrompts");
+  if (area) {
+    area.innerHTML = history.map(p => `<button onclick="usePrompt('${p}')">${p}</button>`).join('');
+  }
+}
+
+function usePrompt(p) {
+  document.getElementById("promptInput").value = p;
+}
+
+function showImageHistory(flash = false) {
+  const area = document.getElementById("imageHistoryArea");
+  const history = JSON.parse(localStorage.getItem("imageHistory") || "[]");
+  area.innerHTML = "<h3>🖼 최근 생성된 이미지</h3>" + history.map(url => `
+    <div class="${flash ? 'flash' : ''}">
+      <img src="${url}" class="history-img" />
+      <a class="download-btn" href="${url}" download="image.png">이미지 저장</a>
+    </div>
+  `).join('');
+}
+</script>
+
+</body>
+</html>
