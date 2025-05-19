@@ -93,8 +93,14 @@
     .options {
       margin-top: 20px;
     }
-    .options select, .options input[type='checkbox'] {
+    .options label,
+    .options select,
+    .options input[type='checkbox'] {
       margin-right: 10px;
+    }
+    .thumbnail-preview {
+      margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
@@ -102,13 +108,11 @@
 
 <div class="sidebar">
   <h2>🎬 우리만의 AI</h2>
-
   <div class="menu-group">
     <div class="menu-title">기본</div>
     <div class="menu-item" onclick="navigate('home')"><span class="label">🏠 홈</span></div>
     <div class="menu-item" onclick="navigate('library')"><span class="label">📁 내 작업물</span></div>
   </div>
-
   <div class="menu-group">
     <div class="menu-title">도구</div>
     <div class="menu-item" onclick="navigate('video')"><span class="label">🎥 비디오 생성</span></div>
@@ -131,66 +135,114 @@
 <script>
   function navigate(section) {
     const content = document.getElementById('mainContent');
-    switch (section) {
-      case 'video':
-        content.innerHTML = `
-          <h1>비디오 생성</h1>
-          <div class="tabs">
-            <button class="active">Image or Text</button>
-            <button>Effect</button>
-            <button>Subject Reference</button>
-            <button>Extend</button>
-            <button>LipSync</button>
-          </div>
+    if (section === 'video') {
+      content.innerHTML = `
+        <h1>비디오 생성</h1>
+        <div class="tabs" id="videoTabs">
+          <button class="active" onclick="setTab(this, 'image')">Image or Text</button>
+          <button onclick="setTab(this, 'effect')">Effect</button>
+          <button onclick="setTab(this, 'subject')">Subject Reference</button>
+          <button onclick="setTab(this, 'extend')">Extend</button>
+          <button onclick="setTab(this, 'lipsync')">LipSync</button>
+        </div>
+        <div id="tabContent">
           <div class="card-grid">
-            <div class="card">📷 이미지 업로드 (필수)</div>
-            <div class="card">📷 이미지 업로드 (선택)</div>
-            <div class="card">📷 이미지 업로드 (선택)</div>
-            <div class="card">📷 이미지 업로드 (선택)</div>
+            <div class="card"><input type="file" required><br>📷 이미지 업로드 (필수)</div>
+            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
+            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
+            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
           </div>
-          <div class="options">
-            <label>길이:
-              <select>
-                <option>5초</option>
-                <option>10초</option>
-                <option>15초</option>
-                <option>30초</option>
-                <option>1분</option>
-                <option>5분</option>
-                <option>10분</option>
-              </select>
-            </label>
-            <label><input type="checkbox" checked> 썸네일 포함 여부</label>
-            <button onclick="alert('비디오가 생성되었습니다 (샘플)!')">🎬 생성</button>
-          </div>
-        `;
-        break;
-      case 'home':
-        content.innerHTML = '<h1>홈</h1><p>AI 도구를 시작하려면 왼쪽 메뉴를 선택하세요.</p>';
-        break;
-      case 'library':
-        content.innerHTML = '<h1>내 작업물</h1><p>생성한 이미지 및 영상 목록입니다.</p>';
-        break;
-      case 'train':
-        content.innerHTML = '<h1>트레인 효과</h1><p>새롭게 추가된 특수 효과 기능입니다.</p>';
-        break;
+        </div>
+        <div class="options">
+          <label>비율:
+            <select>
+              <option>16:9</option>
+              <option>9:16</option>
+            </select>
+          </label>
+          <label>길이:
+            <select>
+              <option>5초</option>
+              <option>10초</option>
+              <option>15초</option>
+              <option>30초</option>
+              <option>1분</option>
+              <option>5분</option>
+              <option>10분</option>
+            </select>
+          </label>
+          <label>해상도:
+            <select>
+              <option>720P</option>
+              <option>1080P (VIP)</option>
+              <option>2K (VIP)</option>
+              <option>4K (VIP)</option>
+            </select>
+          </label>
+          <label>수량:
+            <select>
+              <option>1</option>
+              <option>2 (VIP)</option>
+              <option>3 (VIP)</option>
+              <option>4 (VIP)</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="toggleThumbnail" checked> 썸네일 포함 여부</label>
+          <div class="thumbnail-preview" id="thumbnailPreview">썸네일 미리보기 표시 영역</div>
+          <button onclick="alert('비디오가 생성되었습니다 (샘플)!')">🎬 생성</button>
+        </div>
+      `;
+      document.getElementById('toggleThumbnail').addEventListener('change', function() {
+        document.getElementById('thumbnailPreview').style.display = this.checked ? 'block' : 'none';
+      });
+    } else {
+      const pages = {
+        home: '<h1>홈</h1><p>AI 도구를 시작하려면 왼쪽 메뉴를 선택하세요.</p>',
+        library: '<h1>내 작업물</h1><p>생성한 이미지 및 영상 목록입니다.</p>',
+        train: '<h1>트레인 효과</h1><p>새롭게 추가된 특수 효과 기능입니다.</p>',
+        image: '<h1>이미지 생성</h1><p>텍스트 프롬프트 기반 이미지 생성 도구입니다.</p>',
+        lipsync: '<h1>립싱크 도구</h1><p>텍스트를 음성과 립싱크로 표현해보세요.</p>',
+        drama: '<h1>드라마 생성</h1><p>대본을 입력해 드라마 영상으로 만들어보세요.</p>',
+        tools: '<h1>전체 도구</h1><p>모든 AI 도구를 확인할 수 있는 공간입니다.</p>'
+      };
+      content.innerHTML = pages[section] || '<h1>페이지 없음</h1>';
+    }
+  }
+
+  function setTab(button, tabName) {
+    const buttons = document.querySelectorAll('#videoTabs button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+
+    const tabContent = document.getElementById('tabContent');
+    switch (tabName) {
       case 'image':
-        content.innerHTML = '<h1>이미지 생성</h1><p>텍스트 프롬프트 기반 이미지 생성 도구입니다.</p>';
+        tabContent.innerHTML = `
+          <div class="card-grid">
+            <div class="card"><input type="file" required><br>📷 이미지 업로드 (필수)</div>
+            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
+            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
+            <div class="card"><input type="file"><br>📷 이미지 업로드 (선택)</div>
+          </div>`;
+        break;
+      case 'effect':
+        tabContent.innerHTML = '<p>🎨 효과 설정 탭입니다. (추후 기능 추가 예정)</p>';
+        break;
+      case 'subject':
+        tabContent.innerHTML = '<p>📚 주제 참조 설정 탭입니다. (추후 기능 추가 예정)</p>';
+        break;
+      case 'extend':
+        tabContent.innerHTML = '<p>🔄 연장 옵션 탭입니다. (추후 기능 추가 예정)</p>';
         break;
       case 'lipsync':
-        content.innerHTML = '<h1>립싱크 도구</h1><p>텍스트를 음성과 립싱크로 표현해보세요.</p>';
-        break;
-      case 'drama':
-        content.innerHTML = '<h1>드라마 생성</h1><p>대본을 입력해 드라마 영상으로 만들어보세요.</p>';
-        break;
-      case 'tools':
-        content.innerHTML = '<h1>전체 도구</h1><p>모든 AI 도구를 확인할 수 있는 공간입니다.</p>';
+        tabContent.innerHTML = '<p>👄 립싱크 설정 탭입니다. (추후 기능 추가 예정)</p>';
         break;
       default:
-        content.innerHTML = '<h1>페이지 없음</h1>';
+        tabContent.innerHTML = '<p>선택된 탭이 없습니다.</p>';
     }
   }
 </script>
 
 </body>
 </html>
+
