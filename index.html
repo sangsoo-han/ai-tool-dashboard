@@ -2,125 +2,132 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>우리만의 AI 도구</title>
+  <title>AI 도구 대시보드</title>
   <style>
     body {
       margin: 0;
-      background: #121212;
-      color: #ffffff;
       font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
     }
-    header {
-      background-color: #1f1f1f;
+
+    /* 사이드바 */
+    .sidebar {
+      width: 240px;
+      background-color: #1a1a1a;
+      height: 100vh;
       padding: 20px;
-      font-size: 24px;
-      font-weight: bold;
+      box-sizing: border-box;
+    }
+    .sidebar h2 {
+      font-size: 20px;
+      margin-bottom: 30px;
+      color: #facc15;
+    }
+    .menu-group {
+      margin-top: 20px;
+    }
+    .menu-title {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .menu-item {
+      padding: 10px;
+      color: #ddd;
+      cursor: pointer;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .tool-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
+    .menu-item:hover {
+      background-color: #333;
     }
-    .tool-box {
-      background-color: #1a1a1a;
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid #333;
-      transition: transform 0.2s;
+    .menu-item .label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .tool-box:hover {
-      transform: scale(1.02);
+    .badge {
+      background: #facc15;
+      color: #000;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
     }
-    .caption {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #ccc;
-    }
-    img.preview {
-      width: 100%;
-      border-radius: 8px;
+
+    /* 메인 컨텐츠 */
+    .main {
+      flex: 1;
+      padding: 40px;
     }
   </style>
 </head>
 <body>
-<header>
-  <div>우리만의 AI 도구</div>
-  <div>
-    <span id="welcomeUser"></span>
-    <button onclick="toggleAuthPopup()" style="padding: 6px 12px; font-size: 14px;">🔐 로그인</button>
-    <button onclick="logoutUser()" style="padding: 6px 12px; font-size: 14px; background:#444; color:#fff;">🚪 로그아웃</button>
+
+<div class="sidebar">
+  <h2>🎬 우리만의 AI</h2>
+
+  <div class="menu-group">
+    <div class="menu-title">기본</div>
+    <div class="menu-item" onclick="navigate('home')"><span class="label">🏠 홈</span></div>
+    <div class="menu-item" onclick="navigate('library')"><span class="label">📁 내 작업물</span></div>
   </div>
-</header>
-<div class="tool-container" id="tools" style="display: none;">
-  <div class="tool-box">
-    <h3>이미지 생성</h3>
-    <img src="https://via.placeholder.com/400x200?text=프리셋+이미지" class="preview" alt="프리셋 이미지">
-    <div class="caption">추천 프리셋 기반 이미지</div>
-  </div>
-  <div class="tool-box">
-    <h3>비디오 생성</h3>
-    <img src="https://via.placeholder.com/400x200?text=AI+비디오+프레임" class="preview" alt="AI 비디오 프레임">
-    <div class="caption">스타일 적용된 영상 프레임</div>
+
+  <div class="menu-group">
+    <div class="menu-title">도구</div>
+    <div class="menu-item" onclick="navigate('video')"><span class="label">🎥 비디오 생성</span></div>
+    <div class="menu-item" onclick="navigate('train')">
+      <span class="label">🚆 트레인 효과</span>
+      <span class="badge">NEW</span>
+    </div>
+    <div class="menu-item" onclick="navigate('image')"><span class="label">🖼️ 이미지 생성</span></div>
+    <div class="menu-item" onclick="navigate('lipsync')"><span class="label">👄 립싱크 도구</span></div>
+    <div class="menu-item" onclick="navigate('drama')"><span class="label">🎭 드라마 생성</span></div>
+    <div class="menu-item" onclick="navigate('tools')"><span class="label">🧰 전체 도구</span></div>
   </div>
 </div>
-<div id="auth" style="padding: 40px; max-width: 400px; margin: 60px auto; background: #1a1a1a; border-radius: 12px;">
-  <h2>🔐 로그인</h2>
-  <input id="email" type="email" placeholder="이메일 입력">
-  <input id="password" type="password" placeholder="비밀번호 입력">
-  <button onclick="loginUser()">로그인</button>
-  <button onclick="registerUser()" style="background:#555; color:#fff; margin-top: 10px;">회원가입</button>
+
+<div class="main" id="mainContent">
+  <h1>홈</h1>
+  <p>AI 도구를 시작하려면 왼쪽 메뉴를 선택하세요.</p>
 </div>
+
 <script>
-function loginUser() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const users = JSON.parse(localStorage.getItem('users') || '{}');
-  if (users[email] && users[email].password === password) {
-    localStorage.setItem('currentUser', email);
-    alert('✅ 로그인 성공');
-    location.reload();
-  } else {
-    alert('❌ 로그인 실패. 회원가입 먼저 해주세요.');
+  function navigate(section) {
+    const content = document.getElementById('mainContent');
+    switch (section) {
+      case 'home':
+        content.innerHTML = '<h1>홈</h1><p>AI 도구를 시작하려면 왼쪽 메뉴를 선택하세요.</p>';
+        break;
+      case 'library':
+        content.innerHTML = '<h1>내 작업물</h1><p>생성한 이미지 및 영상 목록입니다.</p>';
+        break;
+      case 'video':
+        content.innerHTML = '<h1>비디오 생성</h1><p>AI 기반 비디오 생성 도구입니다.</p>';
+        break;
+      case 'train':
+        content.innerHTML = '<h1>트레인 효과</h1><p>새롭게 추가된 특수 효과 기능입니다.</p>';
+        break;
+      case 'image':
+        content.innerHTML = '<h1>이미지 생성</h1><p>텍스트 프롬프트 기반 이미지 생성 도구입니다.</p>';
+        break;
+      case 'lipsync':
+        content.innerHTML = '<h1>립싱크 도구</h1><p>텍스트를 음성과 립싱크로 표현해보세요.</p>';
+        break;
+      case 'drama':
+        content.innerHTML = '<h1>드라마 생성</h1><p>대본을 입력해 드라마 영상으로 만들어보세요.</p>';
+        break;
+      case 'tools':
+        content.innerHTML = '<h1>전체 도구</h1><p>모든 AI 도구를 확인할 수 있는 공간입니다.</p>';
+        break;
+      default:
+        content.innerHTML = '<h1>페이지 없음</h1>';
+    }
   }
-}
-function registerUser() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const users = JSON.parse(localStorage.getItem('users') || '{}');
-  if (users[email]) {
-    alert('이미 등록된 사용자입니다.');
-  } else {
-    users[email] = { password };
-    localStorage.setItem('users', JSON.stringify(users));
-    alert('🎉 회원가입 성공! 이제 로그인해주세요.');
-  }
-}
-function logoutUser() {
-  localStorage.removeItem('currentUser');
-  alert('👋 로그아웃 되었습니다');
-  location.reload();
-}
-function toggleAuthPopup() {
-  document.getElementById('auth').scrollIntoView({ behavior: 'smooth' });
-}
 </script>
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  const currentUser = localStorage.getItem('currentUser');
-  if (currentUser) {
-    document.getElementById('auth').style.display = 'none';
-    document.getElementById('tools').style.display = 'grid';
-    document.getElementById('welcomeUser').innerText = `${currentUser}님 환영합니다 👋`;
-  } else {
-    document.getElementById('auth').style.display = 'block';
-    document.getElementById('tools').style.display = 'none';
-    document.getElementById('welcomeUser').innerText = '';
-  }
-});
-</script>
+
 </body>
 </html>
