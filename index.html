@@ -12,7 +12,6 @@
       display: flex;
     }
 
-    /* 사이드바 */
     .sidebar {
       width: 240px;
       background-color: #1a1a1a;
@@ -58,10 +57,44 @@
       border-radius: 4px;
     }
 
-    /* 메인 컨텐츠 */
     .main {
       flex: 1;
       padding: 40px;
+    }
+
+    .tabs button {
+      padding: 10px 16px;
+      margin-right: 6px;
+      background: #222;
+      color: #ccc;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tabs button.active {
+      background: #facc15;
+      color: #000;
+    }
+
+    .card-grid {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .card {
+      background: #1f1f1f;
+      padding: 20px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .options {
+      margin-top: 20px;
+    }
+    .options select, .options input[type='checkbox'] {
+      margin-right: 10px;
     }
   </style>
 </head>
@@ -99,14 +132,44 @@
   function navigate(section) {
     const content = document.getElementById('mainContent');
     switch (section) {
+      case 'video':
+        content.innerHTML = `
+          <h1>비디오 생성</h1>
+          <div class="tabs">
+            <button class="active">Image or Text</button>
+            <button>Effect</button>
+            <button>Subject Reference</button>
+            <button>Extend</button>
+            <button>LipSync</button>
+          </div>
+          <div class="card-grid">
+            <div class="card">📷 이미지 업로드 (필수)</div>
+            <div class="card">📷 이미지 업로드 (선택)</div>
+            <div class="card">📷 이미지 업로드 (선택)</div>
+            <div class="card">📷 이미지 업로드 (선택)</div>
+          </div>
+          <div class="options">
+            <label>길이:
+              <select>
+                <option>5초</option>
+                <option>10초</option>
+                <option>15초</option>
+                <option>30초</option>
+                <option>1분</option>
+                <option>5분</option>
+                <option>10분</option>
+              </select>
+            </label>
+            <label><input type="checkbox" checked> 썸네일 포함 여부</label>
+            <button onclick="alert('비디오가 생성되었습니다 (샘플)!')">🎬 생성</button>
+          </div>
+        `;
+        break;
       case 'home':
         content.innerHTML = '<h1>홈</h1><p>AI 도구를 시작하려면 왼쪽 메뉴를 선택하세요.</p>';
         break;
       case 'library':
         content.innerHTML = '<h1>내 작업물</h1><p>생성한 이미지 및 영상 목록입니다.</p>';
-        break;
-      case 'video':
-        content.innerHTML = '<h1>비디오 생성</h1><p>AI 기반 비디오 생성 도구입니다.</p>';
         break;
       case 'train':
         content.innerHTML = '<h1>트레인 효과</h1><p>새롭게 추가된 특수 효과 기능입니다.</p>';
